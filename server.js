@@ -23,7 +23,9 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',                  // local dev
-    'https://swms-frontend-p17h.vercel.app'   // deployed frontend
+    'https://swms-frontend-p17h.vercel.app',
+    'https://swms-frontend-p17h-q0iqw4th9-vineet-murjanis-projects.vercel.app'
+   // deployed frontend
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
