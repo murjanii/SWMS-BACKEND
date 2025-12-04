@@ -164,59 +164,45 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Admin Login route
 app.post('/api/auth/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Admin login route - Attempting login with email:', email);
 
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    // Check if user exists and is admin
     const user = await User.findOne({ email, role: 'admin' });
     if (!user) {
-      console.log('Admin login route - Admin user not found');
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log('Admin login route - Password does not match');
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Generate token
-    // Use mock token for development
-    const token = 'mock-jwt-token';
-    console.log('Admin login route - Using mock token for development');
+    // ✔ REAL JWT TOKEN
+    const token = jwt.sign(
+      { id: user._id.toString(), role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-    // Return complete user profile
-    const response = {
-      message: 'Admin login successful',
+    res.status(200).json({
+      message: "Admin login successful",
       token,
       user: {
         id: user._id.toString(),
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role,
-        phone: user.phone || '',
-        address: user.address || '',
-        photo: user.photo || '',
-        area: user.area || ''
+        role: user.role
       }
-    };
-    console.log('Admin login route - Response data:', response);
-    res.status(200).json(response);
-  } catch (error) {
-    console.error('Admin login route - Error:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
+// 
 
 // Create Complaint
 app.post('/api/complaints', async (req, res) => {
